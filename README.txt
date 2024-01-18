@@ -1,3 +1,5 @@
+(c) At this time, all right reserved.
+
 Small program for organizing RAM QVL (qualified vendor) lists from PC motherboard vendors. Uses Reflection to auto-generate sorts/filters.
 
 Testing/demostration steps:
