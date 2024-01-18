@@ -1,5 +1,7 @@
 (c) At this time, all right reserved.
 
+`[legacy dll]` - this solution references an older version of [QuodLib](https://github.com/Ketoyu/QuodLib), before some major re-structuring; the required DLL is located in the `[legacy dll]` folder.
+
 Small program for organizing RAM QVL (qualified vendor) lists from PC motherboard vendors. Uses Reflection to auto-generate sorts/filters.
 
 Testing/demostration steps:
