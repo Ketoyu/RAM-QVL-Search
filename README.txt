@@ -4,7 +4,7 @@
 
 --------
 
-A small Windows Forms program for organizing RAM QVL (qualified vendor) lists from PC motherboard vendors. Uses Reflection to auto-generate sorts/filters.
+A small Windows Forms program for organizing RAM QVL (qualified vendor) lists from PC motherboard vendors. Uses C# Reflection to auto-generate sorts/filters.
 
 --------
 
