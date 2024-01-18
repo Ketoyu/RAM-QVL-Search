@@ -1,3 +1,7 @@
+Small program for organizing RAM QVL (qualified vendor) lists from PC motherboard vendors. Uses Reflection to auto-generate sorts/filters.
+
+Testing/demostration steps:
+
 1) Open "import me.txt"
 
 2) do a Ctrl+A, Ctrl+C (copy all) from the file
