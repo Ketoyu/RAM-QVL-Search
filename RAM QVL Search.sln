@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1022
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RAM QVL Search", "RAM QVL Search\RAM QVL Search.csproj", "{336C40F1-D54C-48CE-A4A2-4111EDB84BA2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RAM QVL SearchCore", "RAM QVL SearchCore\RAM QVL SearchCore.csproj", "{4729D196-754B-4AD8-BB72-2B37C68A7288}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{336C40F1-D54C-48CE-A4A2-4111EDB84BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{336C40F1-D54C-48CE-A4A2-4111EDB84BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{336C40F1-D54C-48CE-A4A2-4111EDB84BA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4729D196-754B-4AD8-BB72-2B37C68A7288}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4729D196-754B-4AD8-BB72-2B37C68A7288}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4729D196-754B-4AD8-BB72-2B37C68A7288}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4729D196-754B-4AD8-BB72-2B37C68A7288}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
