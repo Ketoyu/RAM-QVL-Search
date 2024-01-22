@@ -13,7 +13,7 @@ using QuodLib.Strings;
 using QuodLib.Drawing;
 
 namespace RAM_QVL_Search {
-	public partial class Form1 : Form
+    public partial class Form1 : Form
 	{
 
 		readonly Color CLR_T_NORM = classGraphics.CColor(58, 136, 198);
@@ -185,25 +185,31 @@ namespace RAM_QVL_Search {
 			lvQVL.Items.Clear();
 
 			for (int i = 0; i < lstSort.Items.Count; i++)
-				(from Search.searchLookupItem sl in Search.SearchLookup where sl.Text == lstSort.Items[i].ToString() select sl).ToList()[0].Sort = i;
+				(from Search.searchLookupItem sl in Search.SearchLookup 
+				 where sl.Text == lstSort.Items[i].ToString()
+				 select sl)
+				 .First().Sort = i;
 
 			List<(FieldInfo field, Search.searchLookupItem lookup)> sorts =
-					(from f in typeof(Kit).GetFields()
-						join s in Search.SearchLookup 
-						on f.Name equals s.Field orderby s.Sort select (f, s)).ToList();
+				(from f in typeof(Kit).GetFields()
+					join s in Search.SearchLookup on f.Name equals s.Field
+					orderby s.Sort
+					select (f, s))
+				.ToList();
 
-			foreach (Kit k in (from Kit kit in Kits
-								orderby sorts[0].field.GetValue(kit),
-									sorts[1].field.GetValue(kit),
-									sorts[2].field.GetValue(kit),
-									sorts[3].field.GetValue(kit),
-									sorts[4].field.GetValue(kit),
-									sorts[5].field.GetValue(kit),
-									sorts[6].field.GetValue(kit)
-								where filter(kit) select kit).ToList()
-					) {
+			foreach (Kit k in
+				(from Kit kit in Kits
+				orderby sorts[0].field.GetValue(kit),
+					sorts[1].field.GetValue(kit),
+					sorts[2].field.GetValue(kit),
+					sorts[3].field.GetValue(kit),
+					sorts[4].field.GetValue(kit),
+					sorts[5].field.GetValue(kit),
+					sorts[6].field.GetValue(kit)
+				where filter(kit) select kit)
+				.ToList()
+			)
 				lvQVL.Items.Add(k);
-			}
 
 
 			bool filter(Kit k) {
@@ -216,10 +222,16 @@ namespace RAM_QVL_Search {
 				}
 				return rtn;
 			}
+
 			List<string> getSelections(string text) {
-				return (from Control ctrl in 
-								(from GroupBox gb in new[] {gbVdr, gbStickSze, gbSS_DS, gbTmgs, gbChp, gbSpd, gbSpd5k} where gb.Text == text select gb).ToList()[0].Controls
-						   where ((CheckBox)ctrl).Checked select ctrl.Text.Replace(" GB", "")).ToList();
+                IList<Control> controls = (IList<Control>)(new[] { gbVdr, gbStickSze, gbSS_DS, gbTmgs, gbChp, gbSpd, gbSpd5k }
+                                .First(gb => gb.Text == text)
+								.Controls);
+
+                return controls
+					.Where(ctrl => ((CheckBox)ctrl).Checked)
+					.Select(ctrl => ctrl.Text.Replace(" GB", ""))
+					.ToList();
 			}
 		}
 		private void btnCpy_Click(object sender, EventArgs e)
