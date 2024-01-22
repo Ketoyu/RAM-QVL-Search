@@ -69,33 +69,46 @@ namespace RAM_QVL_Search {
 					ik = ik;
 			}
 
-			Search.Vendors = (from Kit kit in Kits orderby kit.Vendor select kit.Vendor)
-				.GroupBy(i => i)
-				.Select(g => g.First())
+			Search.Vendors = Kits
+                .Select(k => k.Vendor)
+                .OrderBy(v => v)
+				.Distinct()
 				.ToList();
-			Search.StickSizes = (from Kit kit in Kits orderby kit.Size_Stick select kit.Size_Stick + " GB")
-				.GroupBy(i => i)
-				.Select(g => g.First())
+
+			Search.StickSizes = Kits
+				.Select(k => k.Size_Stick + " GB")
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+			Search.SS_DS = Kits
+				.Select(k => k.SS_DS)
+                .Distinct()
+                .OrderByDescending(ss => ss)
 				.ToList();
-			Search.SS_DS = (from Kit kit in Kits orderby kit.SS_DS descending select kit.SS_DS)
-				.GroupBy(i => i)
-				.Select(g => g.First())
+
+			Search.Chips = Kits
+				.Select(k => k.Chip)
+                .Distinct()
+                .OrderBy(c => c)
 				.ToList();
-			Search.Chips = (from Kit kit in Kits orderby kit.Chip select kit.Chip)
-				.GroupBy(i => i)
-				.Select(g => g.First())
+
+			Search.Timings = Kits
+				.Select(k => k.CL)
+                .Distinct()
+                .OrderBy(cl => cl)
+                .ToList();
+
+			Search.Speeds = Kits
+				.Select(k => k.Speed)
+                .Distinct()
+                .OrderByDescending(s => s)
 				.ToList();
-			Search.Timings = (from Kit kit in Kits orderby kit.CL select kit.CL)
-				.GroupBy(i => i)
-				.Select(g => g.First())
-				.ToList();
-			Search.Speeds = (from Kit kit in Kits orderby kit.Speed descending select kit.Speed)
-				.GroupBy(i => i)
-				.Select(g => g.First())
-				.ToList();
-			Search.Speeds_Ryzen3 = (from Kit kit in Kits orderby kit.Speed_Ryzen3 descending select kit.Speed)
-				.GroupBy(i => i)
-				.Select(g => g.First())
+
+			Search.Speeds_Ryzen3 = Kits
+                .OrderByDescending(k => k.Speed_Ryzen3)
+                .Select(kit => kit.Speed)
+				.Distinct()
 				.ToList();
 
 			int y = 0, x = gbVdr.Location.X;
