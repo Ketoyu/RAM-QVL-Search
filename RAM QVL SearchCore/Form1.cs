@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using QuodLib.Strings;
 using QuodLib.Drawing;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RAM_QVL_Search {
     public partial class Form1 : Form
@@ -39,7 +40,10 @@ namespace RAM_QVL_Search {
 		private void btnPaste_Click(object sender, EventArgs e)
 		{
 			int ik = 0;
-			string src = Clipboard.GetText().Replace("\r\n", "\n").Replace("●", "•").Replace("•\n", "•");
+			string src = Clipboard.GetText()
+				.Replace("\r\n", "\n")
+				.Replace("●", "•")
+				.Replace("•\n", "•");
 			src = src.FromIndex(src.IndexOf("4 DIMM\n") + "4 DIMM\n".Length);
 			src = src.GetBefore("Vendor");
 
@@ -50,7 +54,9 @@ namespace RAM_QVL_Search {
 
 				if (idx < src.Length) {
 					idx = src.SeekNot(idx, '•', true);
-					if (idx < src.IndexOf("•")) idx = src.Length;
+					if (idx < src.IndexOf("•"))
+						idx = src.Length;
+
 					kit_s = src.TowardIndex(idx, false);
 					src = src.FromIndex(idx, true);
 				} else {
@@ -65,8 +71,8 @@ namespace RAM_QVL_Search {
 
 				Kits.Add(kit_n);
 				lvQVL.Items.Add(kit_n);
-				if (ik != Kits.Count || kit_n.PartNo == "KS2400D4P150B08G")
-					ik = ik;
+				//if (ik != Kits.Count || kit_n.PartNo == "KS2400D4P150B08G")
+				//	ik = ik;
 			}
 
 			Search.Vendors = Kits
@@ -138,11 +144,12 @@ namespace RAM_QVL_Search {
 			void fillGroupbox<T>(GroupBox gb, List<T> lst) {
 				gb.Location = new Point(x, gb.Location.Y);
 				for (int i = 0; i < lst.Count; i++) {
-					CheckBox chk = new CheckBox();
-					chk.Text = "" + lst[i];
-					chk.AutoSize = true;
-					chk.ForeColor = classGraphics.CColor(58, 136, 198);
-					gb.Controls.Add(chk);
+                    CheckBox chk = new CheckBox {
+                        Text = "" + lst[i],
+                        AutoSize = true,
+                        ForeColor = classGraphics.CColor(58, 136, 198)
+                    };
+                    gb.Controls.Add(chk);
 
 					y = 15 + (i * chk.Height);
 					chk.Location = new Point(10, y);
@@ -179,7 +186,8 @@ namespace RAM_QVL_Search {
 
 		private void lstSort_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			//if (lstSort_idx < 0) lstSort_idx = lstSort.SelectedIndex;
+			//if (lstSort_idx < 0)
+			//	lstSort_idx = lstSort.SelectedIndex;
 		}
 
 		private void lstSort_Click(object sender, EventArgs e)
@@ -198,10 +206,9 @@ namespace RAM_QVL_Search {
 			lvQVL.Items.Clear();
 
 			for (int i = 0; i < lstSort.Items.Count; i++)
-				(from Search.searchLookupItem sl in Search.SearchLookup 
-				 where sl.Text == lstSort.Items[i].ToString()
-				 select sl)
-				 .First().Sort = i;
+				Search.SearchLookup 
+				 .First(sl => sl.Text == lstSort.Items[i].ToString())
+				 .Sort = i;
 
 			List<(FieldInfo field, Search.searchLookupItem lookup)> sorts =
 				(from f in typeof(Kit).GetFields()
@@ -210,43 +217,45 @@ namespace RAM_QVL_Search {
 					select (f, s))
 				.ToList();
 
-			foreach (Kit k in
-				(from Kit kit in Kits
-				orderby sorts[0].field.GetValue(kit),
-					sorts[1].field.GetValue(kit),
-					sorts[2].field.GetValue(kit),
-					sorts[3].field.GetValue(kit),
-					sorts[4].field.GetValue(kit),
-					sorts[5].field.GetValue(kit),
-					sorts[6].field.GetValue(kit)
-				where filter(kit) select kit)
-				.ToList()
-			)
+			var kits = Kits
+				.Where(filter)
+				.OrderBy(k => sorts[0].field.GetValue(k));
+
+			for (int i = 1; i <= 6; i++)
+				kits = kits.ThenBy(k => sorts[i].field.GetValue(k));
+
+            foreach (Kit k in kits)
 				lvQVL.Items.Add(k);
 
-
+			//---- local method ----
 			bool filter(Kit k) {
-				bool rtn = true;
-				for (int i = 0; i < lstSort.Items.Count && rtn; i++) {
-					List<string> selections = getSelections(sorts[i].lookup.Text);
-					if (selections.Count < 1) continue;
+				for (int i = 0; i < lstSort.Items.Count; i++) {
+					
+					//get selections
+					string text = sorts[i].lookup.Text;
 
-					rtn &= selections.Contains("" + sorts[i].field.GetValue(k));
+                    Control.ControlCollection controls =
+                        new[] { gbVdr, gbStickSze, gbSS_DS, gbTmgs, gbChp, gbSpd, gbSpd5k }
+                        .First(gb => gb.Text == text)
+                        .Controls;
+
+                    List<string> selections = ((IEnumerable<Control>)controls)
+                        .Where(ctrl => ((CheckBox)ctrl).Checked)
+                        .Select(ctrl => ctrl.Text.RemoveTerm(" GB"))
+                        .ToList();
+
+					//apply filter
+					if (!selections.Any())
+						continue;
+
+					if (!selections.Contains($"{sorts[i].field.GetValue(k)}"))
+						return false;
 				}
-				return rtn;
-			}
 
-			List<string> getSelections(string text) {
-                IList<Control> controls = (IList<Control>)(new[] { gbVdr, gbStickSze, gbSS_DS, gbTmgs, gbChp, gbSpd, gbSpd5k }
-                                .First(gb => gb.Text == text)
-								.Controls);
+				return true;
+            }
 
-                return controls
-					.Where(ctrl => ((CheckBox)ctrl).Checked)
-					.Select(ctrl => ctrl.Text.Replace(" GB", ""))
-					.ToList();
-			}
-		}
+        }
 		private void btnCpy_Click(object sender, EventArgs e)
 		{
 			Clipboard.SetText(lvQVL.SelectedItems[0].SubItems[1].Text);
