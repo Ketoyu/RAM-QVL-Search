@@ -12,100 +12,9 @@ using System.Reflection;
 using QuodLib.Strings;
 using QuodLib.Drawing;
 
-namespace RAM_QVL_Search
-{
+namespace RAM_QVL_Search {
 	public partial class Form1 : Form
 	{
-		static class Search
-		{
-			public static List<string> Vendors, StickSizes, Chips, SS_DS, Timings;
-			public static List<int> Speeds, Speeds_Ryzen3;
-			public class searchLookupItem
-			{
-				public string Field, Text, List;
-				public int Sort;
-			}
-			public static List<searchLookupItem> SearchLookup = new List<searchLookupItem>()
-				{
-					new searchLookupItem() {Field = "Vendor", Text = "Vendor", List = "Vendors"},
-					new searchLookupItem() {Field = "Size_Stick", Text = "Stick size", List = "StickSizes"},
-					new searchLookupItem() {Field = "SS_DS", Text = "SS / DS", List = "SS_DS"},
-					new searchLookupItem() {Field = "CL", Text = "Timings", List = "Timings"},
-					new searchLookupItem() {Field = "Chip", Text = "Chip", List = "Chips"},
-					new searchLookupItem() {Field = "Speed", Text = "Speed", List = "Speeds"},
-					new searchLookupItem() {Field = "Speed_Ryzen3", Text = "Speed (5k)", List = "Speeds_Ryzen3"}
-				};
-		}
-		class Kit
-		{
-			public string Vendor, PartNo, SS_DS, Chip, CL, Timings_Text;
-
-			public int Sticks, Size_Stick;
-			public int Size_Total => Sticks * Size_Stick;
-			public int[] Timings;
-			public float Voltage;
-			public int Speed, Speed_Ryzen3;
-			public Dictionary<byte, bool> Dimms;
-
-			public Kit(string source)
-			{
-				string[] p = source.Split('\n');
-				Vendor = FormatVendor(p[0]); //Vendor
-				PartNo = p[1]; //#
-
-				//Size
-				if (p[2].Contains("(")) p[2] = p[2].GetAfter("(").GetBefore(")"); //16(2*GB) -> 2*8GB
-
-				if (!p[2].Contains("x")) { // 8G, 16GB, etc.
-					Size_Stick = int.Parse(p[2].RemoveTerm(" ").GetBefore("G"));
-					Sticks = 1;
-				} else {
-					if (p[2].IndexOf('x') < 3) { // X*YGB
-						Sticks = int.Parse("" + p[2][0]);
-						Size_Stick = int.Parse(p[2].Split('x')[1].Split('G')[0]);
-					} else { //YGB*X
-						Size_Stick = int.Parse(p[2].Split('G')[0]); 
-						Sticks = int.Parse(p[2].Split('x')[1]);
-					}
-				}
-				SS_DS = p[3]; // (???)
-				Chip = FormatVendor(p[4]); //Chip
-
-				//Timings
-				Timings = new int[4];
-				Timings_Text = p[5].Replace("R", "").Replace("--", "-");
-				string[] t = Timings_Text.Split('-');
-				for (int i = 0; i < 4; i++)
-					Timings[i] = byte.Parse(t[i]);
-				CL = "" + Timings[0] + " CL";
-
-				//Voltage
-				Voltage = float.Parse(p[6].Replace("V", ""));
-
-				//Speed
-				Speed = int.Parse(p[8]);
-				Speed_Ryzen3 = int.Parse(p[9]);
-
-				//Dimms
-				Dimms = new Dictionary<byte, bool>();
-				for (int i = 0; i < 3; i++)
-					Dimms.Add((byte)Math.Pow(2, i), p[10].Length > i);
-			}
-			public static implicit operator ListViewItem(Kit kit) {
-				return new ListViewItem(new string[] {
-						kit.Vendor, 
-						kit.PartNo, $"{kit.Size_Stick}G x{kit.Sticks} = {kit.Size_Total}G{kit.SS_DS}",
-						kit.Chip, kit.Timings_Text, 
-						Misc.Num_AddCommas(Math.Round(kit.Voltage, 2)).RemoveTrailing('0'),
-						kit.Speed.ToString(),
-						kit.Speed_Ryzen3.ToString(),
-						(kit.Dimms[1] ? "•" : string.Empty), 
-						(kit.Dimms[2] ? "•" : string.Empty), 
-						(kit.Dimms[4] ? "•" : string.Empty)
-					});
-
-			}
-		}
 
 		readonly Color CLR_T_NORM = classGraphics.CColor(58, 136, 198);
 		readonly Color CLR_C_NORM = classGraphics.MColor(31);
@@ -244,7 +153,7 @@ namespace RAM_QVL_Search
 					lstSort.Items[idx] = temp;
 					lstSort_idx -= 1;
 				}
-			}  else if (e.KeyCode == Keys.Down) {
+			} else if (e.KeyCode == Keys.Down) {
 				if (idx < lstSort.Items.Count - 1) {
 					string temp = (string)lstSort.Items[idx + 1];
 					lstSort.Items[idx + 1] = lstSort.Items[idx];
@@ -264,19 +173,13 @@ namespace RAM_QVL_Search
 		{
 			lstSort_idx = lstSort.SelectedIndex;
 		}
-		public static string FormatVendor(string vendor) {
-			vendor = vendor.ToUpper();
-			vendor = vendor.Replace("A-DATA", "ADATA")
-							.Replace(new string[] {"HYPER-X", "HYPER X", "HYPERX"}, "HYPER X")
-							.Replace(new string[] {"HYNIX"}, "SK HYNIX").Replace("SK SK", "SK")
-							.Replace(new string[] {"TEAM", "TEAM GROUP"}, "TEAMGROUP").Replace("TEAM TEAM", "TEAM").Replace("TEAMGROUPGROUP", "TEAMGROUP")
-							.Replace("AORUS", "GIGABYTE");
 
-			return vendor.Capitalize();
-		}
-		private static bool KnownVendor(string vendor) {
-			return (new string[] {"ADATA", "CORSAIR", "CRUCIAL", "G.SKILL", "HYPER X", "KINGSTON", "SK HYNIX", "TEAMGROUP", "THERMALTAKE" }).Contains(vendor.ToUpper());
-		}
+		private static readonly string[] KnownVendors = ["ADATA", "CORSAIR", "CRUCIAL", "G.SKILL", "HYPER X", "KINGSTON", "SK HYNIX", "TEAMGROUP", "THERMALTAKE"];
+
+        private static bool IsKnownVendor(string vendor)
+			=> KnownVendors
+				.Contains(vendor.ToUpper());
+
 		private void btnQry_Click(object sender, EventArgs e)
 		{
 			lvQVL.Items.Clear();
